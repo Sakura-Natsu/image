@@ -10,6 +10,10 @@ const elements = {
   addImageButton: document.querySelector("#addImageButton"),
   imageList: document.querySelector("#imageList"),
   imageTemplate: document.querySelector("#imageInputTemplate"),
+  provider: document.querySelector("#provider"),
+  providerHint: document.querySelector("#providerHint"),
+  apiBaseUrl: document.querySelector("#apiBaseUrl"),
+  apiConfigFields: document.querySelectorAll(".api-config"),
   authMode: document.querySelector("#authMode"),
   apiKeyField: document.querySelector("#apiKeyField"),
   customHeaderField: document.querySelector("#customHeaderField"),
@@ -25,6 +29,7 @@ const elements = {
 
 const STORAGE_KEY = "editimage:form:v1";
 const PERSIST_FIELDS = [
+  "provider",
   "apiBaseUrl",
   "endpointPath",
   "authMode",
@@ -93,6 +98,18 @@ function applyState(state) {
 function setStatus(message, type = "empty") {
   elements.statusBox.textContent = message;
   elements.statusBox.className = `status ${type}`;
+}
+
+function toggleProvider() {
+  const isNetlify = elements.provider.value === "netlify";
+  // Netlify 内置 AI 模式下，Base URL / 鉴权 / API Key 均由服务端环境变量提供，隐藏这些字段。
+  elements.apiConfigFields.forEach((field) => field.classList.toggle("hidden", isNetlify));
+  elements.providerHint.classList.toggle("hidden", !isNetlify);
+  // 隐藏的必填项会阻塞表单校验，按模式开关 required。
+  elements.apiBaseUrl.required = !isNetlify;
+  if (!isNetlify) {
+    toggleAuthFields();
+  }
 }
 
 function toggleAuthFields() {
@@ -205,6 +222,7 @@ function readFormPayload() {
   Object.assign(request, parseExtraJson());
 
   return {
+    provider: String(formData.get("provider") || "custom"),
     apiBaseUrl: String(formData.get("apiBaseUrl") || "").trim(),
     endpointPath: String(formData.get("endpointPath") || "").trim(),
     apiKey: String(formData.get("apiKey") || ""),
@@ -476,6 +494,7 @@ function resetForm() {
   elements.form.reset();
   elements.imageList.innerHTML = "";
   addImageRow(DEFAULT_IMAGE_URL);
+  toggleProvider();
   toggleAuthFields();
   clearOutput();
 }
@@ -488,6 +507,7 @@ elements.generateButton.addEventListener("click", generateImage);
 elements.resetButton.addEventListener("click", resetForm);
 elements.clearOutputButton.addEventListener("click", clearOutput);
 elements.authMode.addEventListener("change", toggleAuthFields);
+elements.provider.addEventListener("change", toggleProvider);
 elements.outputFormat.addEventListener("change", toggleCompressionField);
 
 // 任意字段输入/变更后即时写入 localStorage（参考图 URL 的 input 事件也会冒泡到 form）
@@ -504,5 +524,6 @@ if (savedState && Array.isArray(savedState.images) && savedState.images.length >
 if (savedState) {
   applyState(savedState);
 }
+toggleProvider();
 toggleAuthFields();
 toggleCompressionField();

@@ -57,6 +57,27 @@ function normalizeTargetUrl(apiBaseUrl, endpointPath) {
   return new URL(cleanEndpoint.slice(1), baseWithSlash).toString();
 }
 
+function buildNetlifyGatewayTarget(endpointPath) {
+  // Netlify 在函数运行时注入这些变量；NETLIFY_AI_GATEWAY_* 始终可用，OPENAI_* 仅在未自定义时注入。
+  const gatewayBase = process.env.NETLIFY_AI_GATEWAY_BASE_URL || "";
+  const gatewayKey = process.env.NETLIFY_AI_GATEWAY_KEY || process.env.OPENAI_API_KEY || "";
+
+  if (!gatewayBase || !gatewayKey) {
+    throw new Error(
+      "Netlify 内置 AI 未启用：未检测到 AI Gateway 环境变量。请先完成一次生产部署，并在项目设置中开启 AI 功能。"
+    );
+  }
+
+  // 网关暴露的是 OpenAI 兼容路径，位于 `<gateway>/v1`（与表单默认 base 形状一致）。
+  const baseUrl = `${trimSlashEnd(gatewayBase)}/v1`;
+  const endpoint = String(endpointPath || "").trim() || "/images/edits";
+
+  return {
+    targetUrl: normalizeTargetUrl(baseUrl, endpoint),
+    apiKey: gatewayKey
+  };
+}
+
 function assertAllowedHost(targetUrl) {
   const allowList = String(process.env.ALLOWED_IMAGE_API_HOSTS || "")
     .split(",")
@@ -136,9 +157,22 @@ function normalizeTimeoutMs(timeoutSeconds) {
 }
 
 async function callImageApi(payload) {
-  const targetUrl = normalizeTargetUrl(payload.apiBaseUrl, payload.endpointPath);
-  assertAllowedHost(targetUrl);
   validateRequestBody(payload.request);
+
+  let targetUrl;
+  let authHeaders;
+
+  if (payload.provider === "netlify") {
+    // 走当前项目内置的 Netlify AI Gateway：地址与鉴权全部来自服务端注入的环境变量，
+    // 前端无需也无法提供 Base URL / API Key。网关属于自有可信域名，跳过白名单校验。
+    const gateway = buildNetlifyGatewayTarget(payload.endpointPath);
+    targetUrl = gateway.targetUrl;
+    authHeaders = { Authorization: `Bearer ${gateway.apiKey}` };
+  } else {
+    targetUrl = normalizeTargetUrl(payload.apiBaseUrl, payload.endpointPath);
+    assertAllowedHost(targetUrl);
+    authHeaders = buildAuthHeaders(payload.authMode, payload.apiKey, payload.customHeaderName);
+  }
 
   const timeoutMs = normalizeTimeoutMs(payload.timeoutSeconds);
   const controller = new AbortController();
@@ -149,7 +183,7 @@ async function callImageApi(payload) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...buildAuthHeaders(payload.authMode, payload.apiKey, payload.customHeaderName)
+        ...authHeaders
       },
       body: JSON.stringify(payload.request),
       signal: controller.signal
