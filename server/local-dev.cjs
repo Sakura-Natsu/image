@@ -64,6 +64,33 @@ function serveStatic(req, res) {
 }
 
 const server = http.createServer(async (req, res) => {
+  if (req.url.startsWith("/api/config")) {
+    if (req.method === "OPTIONS") {
+      const response = jsonResponse(204, {});
+      send(res, response.statusCode, response.headers, "");
+      return;
+    }
+
+    if (req.method !== "GET") {
+      const response = jsonResponse(405, { error: "只支持 GET 请求" });
+      send(res, response.statusCode, response.headers, response.body);
+      return;
+    }
+
+    const gatewayUrl = process.env.NETLIFY_AI_GATEWAY_URL || "";
+    const gatewayKey = process.env.NETLIFY_AI_GATEWAY_KEY || "";
+
+    if (!gatewayUrl || !gatewayKey) {
+      const response = jsonResponse(500, { error: "AI Gateway not configured" });
+      send(res, response.statusCode, response.headers, response.body);
+      return;
+    }
+
+    const response = jsonResponse(200, { gatewayUrl, gatewayKey });
+    send(res, response.statusCode, response.headers, response.body);
+    return;
+  }
+
   if (req.url.startsWith("/api/generate")) {
     if (req.method === "OPTIONS") {
       const response = jsonResponse(204, {});
