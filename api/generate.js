@@ -1,6 +1,6 @@
-import { createRequire } from "node:module";
-const require = createRequire(import.meta.url);
-const { handleProxyRequest, jsonResponse } = require("../server/imageProxy.cjs");
+import imageProxy from "../server/imageProxy.cjs";
+
+const { handleProxyRequest, jsonResponse } = imageProxy;
 
 export default async function handler(req, res) {
   if (req.method === "OPTIONS") {
