@@ -1,9 +1,11 @@
+import { createRequire } from "node:module";
+const require = createRequire(import.meta.url);
 const { handleProxyRequest, jsonResponse } = require("../server/imageProxy.cjs");
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method === "OPTIONS") {
-    const optionsResponse = jsonResponse(204, {});
-    for (const [key, value] of Object.entries(optionsResponse.headers)) {
+    const r = jsonResponse(204, {});
+    for (const [key, value] of Object.entries(r.headers)) {
       res.setHeader(key, value);
     }
     res.status(204).end();
@@ -11,17 +13,17 @@ module.exports = async function handler(req, res) {
   }
 
   if (req.method !== "POST") {
-    const methodResponse = jsonResponse(405, { error: "只支持 POST 请求" });
-    for (const [key, value] of Object.entries(methodResponse.headers)) {
+    const r = jsonResponse(405, { error: "只支持 POST 请求" });
+    for (const [key, value] of Object.entries(r.headers)) {
       res.setHeader(key, value);
     }
-    res.status(405).send(methodResponse.body);
+    res.status(405).send(r.body);
     return;
   }
 
-  const proxyResponse = await handleProxyRequest(req.body);
-  for (const [key, value] of Object.entries(proxyResponse.headers)) {
+  const r = await handleProxyRequest(req.body);
+  for (const [key, value] of Object.entries(r.headers)) {
     res.setHeader(key, value);
   }
-  res.status(proxyResponse.statusCode).send(proxyResponse.body);
-};
+  res.status(r.statusCode).send(r.body);
+}
