@@ -64,7 +64,10 @@ function buildNetlifyGatewayTarget(endpointPath) {
 
   if (!gatewayBase || !gatewayKey) {
     throw new Error(
-      "Netlify 内置 AI 未启用：未检测到 AI Gateway 环境变量。请先完成一次生产部署，并在项目设置中开启 AI 功能。"
+      "Netlify AI Gateway 未对本站点启用：函数运行时未注入 NETLIFY_AI_GATEWAY_BASE_URL / NETLIFY_AI_GATEWAY_KEY。" +
+        "AI 功能是「团队级」开关（不在单个项目的设置里），路径为：Netlify 控制台左上角切回团队 → Team settings → AI enablement → Configure，" +
+        "需要 Team Owner 权限。请确认 AI features 为开启、且未触发 AI usage 信用额度上限，" +
+        "并确保本项目已有一次「生产部署」，然后到生产域名（*.netlify.app 主域名，而非 Deploy Preview）上测试。"
     );
   }
 

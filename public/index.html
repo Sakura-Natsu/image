@@ -34,8 +34,11 @@
           </label>
 
           <p class="provider-hint span-2 hidden" id="providerHint">
-            使用当前 Netlify 项目内置的 AI Gateway，无需填写 Base URL 与 API Key。请确保模型填写为
-            <code>gpt-image-2</code>，并已在项目设置中开启 AI 功能。
+            使用当前 Netlify 项目内置的 AI Gateway，无需填写 Base URL 与 API Key，模型用
+            <code>gpt-image-1</code> 或 <code>gpt-image-2</code> 均可。AI 功能是<strong>团队级</strong>开关，
+            不在单个项目设置里：切回团队后进入
+            <strong>Team settings → AI enablement → Configure</strong>（需 Team Owner 权限）开启，
+            并确保本项目已有一次<strong>生产部署</strong>，然后到生产域名上使用。
           </p>
 
           <label class="field span-2 api-config">
