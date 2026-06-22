@@ -59,7 +59,7 @@ function normalizeTargetUrl(apiBaseUrl, endpointPath) {
 
 function buildNetlifyGatewayTarget(endpointPath) {
   // Netlify 在函数运行时注入这些变量；NETLIFY_AI_GATEWAY_* 始终可用，OPENAI_* 仅在未自定义时注入。
-  const gatewayBase = process.env.NETLIFY_AI_GATEWAY_BASE_URL || "";
+  const gatewayBase = process.env.NETLIFY_AI_GATEWAY_URL || "";
   const gatewayKey = process.env.NETLIFY_AI_GATEWAY_KEY || process.env.OPENAI_API_KEY || "";
 
   if (!gatewayBase || !gatewayKey) {
