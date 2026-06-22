@@ -26,6 +26,19 @@
           </div>
 
           <label class="field span-2">
+            <span>接口来源</span>
+            <select id="provider" name="provider">
+              <option value="custom">自定义 OpenAI 兼容接口</option>
+              <option value="netlify">Netlify 内置 AI（gpt-image-2）</option>
+            </select>
+          </label>
+
+          <p class="provider-hint span-2 hidden" id="providerHint">
+            使用当前 Netlify 项目内置的 AI Gateway，无需填写 Base URL 与 API Key。请确保模型填写为
+            <code>gpt-image-2</code>，并已在项目设置中开启 AI 功能。
+          </p>
+
+          <label class="field span-2 api-config">
             <span>Base URL</span>
             <input
               id="apiBaseUrl"
@@ -42,7 +55,7 @@
             <input id="endpointPath" name="endpointPath" type="text" value="/images/edits" />
           </label>
 
-          <label class="field">
+          <label class="field api-config">
             <span>鉴权方式</span>
             <select id="authMode" name="authMode">
               <option value="bearer">Authorization: Bearer</option>
@@ -52,12 +65,12 @@
             </select>
           </label>
 
-          <label class="field custom-auth hidden" id="customHeaderField">
+          <label class="field custom-auth hidden api-config" id="customHeaderField">
             <span>Header 名称</span>
             <input id="customHeaderName" name="customHeaderName" type="text" value="Authorization" />
           </label>
 
-          <label class="field api-key-field span-2" id="apiKeyField">
+          <label class="field api-key-field span-2 api-config" id="apiKeyField">
             <span>API Key</span>
             <input id="apiKey" name="apiKey" type="password" autocomplete="off" spellcheck="false" />
           </label>

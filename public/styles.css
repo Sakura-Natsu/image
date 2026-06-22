@@ -205,6 +205,24 @@ textarea:focus {
   display: none !important;
 }
 
+.provider-hint {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(99, 102, 241, 0.08);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.provider-hint code {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--code);
+  color: #fff;
+  font-size: 12px;
+}
+
 .image-list {
   display: grid;
   gap: 10px;
